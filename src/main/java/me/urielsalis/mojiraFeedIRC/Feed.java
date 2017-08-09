@@ -15,7 +15,7 @@ public class Feed {
     public Feed(SyndEntryImpl entry) {
         this.link = entry.getLink();
         this.title = entry.getTitle().replaceAll("\\<[^>]*>", "").trim().substring(entry.getAuthor().length()+1).replaceAll(" +", " ");; //remove all html tags and extra spaces
-        this.author = entry.getAuthor().replaceAll("\\[[^\\]]*", "").substring(1).trim();
+        this.author = entry.getAuthor().replaceAll("\\[[^\\]]*", "").trim();
     }
 
     @Override
