@@ -1,0 +1,17 @@
+{
+    serverdata: {
+        name: "MojiraFeed",
+        description: "Mojira IRC Feed (unofficial)",
+        networkName: "MojiraFeed",
+        networkDesc: "Mojira IRC Feed (unofficial)",
+        hub: false,
+        maxClients: 512
+    },
+    admin: {
+        name: "Uriel Salischiker",
+        description: "Dev",
+        email: "mojirafeed@urielsalis.me"
+    }
+
+
+}

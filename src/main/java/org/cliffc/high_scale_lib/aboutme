@@ -1,0 +1,12 @@
+These files are part of the highly scalable java library written by Cliff Click and have been released into the public domain.
+
+Regardless of what the license header on the files in THIS package state, they are still in the public domain and are
+freely redistributable. If the license header does change, please notify me of this mistake, as it is not possible
+to force the IDE to not change the license on these files automatically.
+
+The default license header follows:
+
+/*
+ * Written by Cliff Click and released to the public domain, as explained at
+ * http://creativecommons.org/licenses/publicdomain
+ */
