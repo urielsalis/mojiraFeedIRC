@@ -13,7 +13,7 @@ public class Feed {
     String author;
 
     public Feed(SyndEntryImpl entry) {
-        this.link = entry.getLink();
+        this.link = entry.getLink().replace("&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel", ""); // shorten comment links
         this.title = entry.getTitle().replaceAll("\\<[^>]*>", "").trim().substring(entry.getAuthor().length()+1).replaceAll(" +", " ");; //remove all html tags and extra spaces
         this.author = entry.getAuthor().replaceAll("\\[[^\\]]*", "").trim();
     }
