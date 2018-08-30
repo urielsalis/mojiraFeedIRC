@@ -24,7 +24,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>me.urielsalis.mojiraFeedIRC.Main</mainClass>
+                            <mainClass>me.urielsalis.mojiraFeedIRC.MainKt</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -45,7 +45,8 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>me.urielsalis.mojirafeed.Main</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>me.urielsalis.mojiraFeedIRC.MainKt</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
