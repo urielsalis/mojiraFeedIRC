@@ -13,6 +13,6 @@ How to use:
 
 Commands:
 -
-- /msg FeedServer IGNORE ignore string - Adds a string to your ignore list 
+- /msg FeedServer IGNORE ignore regex - adds "regex" to your ignore list, it must be a full match for it to be ignored
 
    
