@@ -1,7 +1,7 @@
 How to run:
 -
 - Run mvn package
-- Run java -jar target/mojiraFeedIRC-1.0-SNAPSHOT-jar-with-dependencies.jar 
+- Run java -jar target/mojiraFeedIRC-2.0.0-jar-with-dependencies.jar 
 
 How to use:
 -
