@@ -36,6 +36,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+
 import nedhyett.Amelia.Amelia;
 import nedhyett.Amelia.AmeliaThread;
 import nedhyett.Amelia.CommandRegistry;
@@ -63,11 +64,11 @@ public class InputThread extends AmeliaThread {
      * @param in
      */
     public InputThread(User parent, InputStream in) {
-	super();
-	this.setDaemon(true);
-	this.setName("Amelia:InputThread");
-	this.in = new BufferedReader(new InputStreamReader(in));
-	this.parent = parent;
+        super();
+        this.setDaemon(true);
+        this.setName("Amelia:InputThread");
+        this.in = new BufferedReader(new InputStreamReader(in));
+        this.parent = parent;
     }
 
     /**
@@ -76,38 +77,38 @@ public class InputThread extends AmeliaThread {
      * @return
      */
     public User getParent() {
-	return this.parent;
+        return this.parent;
     }
 
     @Override
     public void run() {
-	while (!this.isInterrupted() && !this.getParent().socket.isInputShutdown()) {
-	    try {
-		String line = this.in.readLine();
-		this.processLine(line);
-	    } catch (IOException e) {
-		CrimsonLog.severe("Exception in input thread!");
-		CrimsonLog.severe(e);
-		this.getParent().quit("Server error: " + e.getMessage());
-		break;
-	    }
-	}
-	try {
-	    getParent().socket.close();
-	} catch (IOException e) {
-	    //Ignore the error.
-	}
+        while (!this.isInterrupted() && !this.getParent().socket.isInputShutdown()) {
+            try {
+                String line = this.in.readLine();
+                this.processLine(line);
+            } catch (IOException e) {
+                CrimsonLog.severe("Exception in input thread!");
+                CrimsonLog.severe(e);
+                this.getParent().quit("Server error: " + e.getMessage());
+                break;
+            }
+        }
+        try {
+            getParent().socket.close();
+        } catch (IOException e) {
+            //Ignore the error.
+        }
     }
 
     @Override
     public void interrupt() {
-	try {
-	    this.getParent().socket.shutdownInput();
-	} catch (IOException ex) {
+        try {
+            this.getParent().socket.shutdownInput();
+        } catch (IOException ex) {
 
-	} finally {
-	    super.interrupt();
-	}
+        } finally {
+            super.interrupt();
+        }
     }
 
     /**
@@ -116,38 +117,38 @@ public class InputThread extends AmeliaThread {
      * @param command
      */
     public void processLine(String command) {
-	CrimsonLog.debug(command + " (from " + this.getParent().getID() + ")");
-	if (command == null) {
-	    if (this.fails > 100) {
-		//send("You have been kicked due to receiving too many null lines!");
-		//getParent().die(new IllegalStateException("Too many null lines!"));
-		this.interrupt();
-	    }
-	    this.fails++;
-	    return;
-	}
+        CrimsonLog.debug(command + " (from " + this.getParent().getID() + ")");
+        if (command == null) {
+            if (this.fails > 100) {
+                //send("You have been kicked due to receiving too many null lines!");
+                //getParent().die(new IllegalStateException("Too many null lines!"));
+                this.interrupt();
+            }
+            this.fails++;
+            return;
+        }
 
-	if (command.indexOf(' ') <= 0) {
-	    command += " ";
-	}
-	if (this.fails > 0) {
-	    this.fails--; //Give the user credit for actually sending a line this time :)
-	}
-	if (!CommandRegistry.hasCommand(command.split(" ")[0].toUpperCase())) {
-	    CrimsonLog.warning(getParent().getID() + " is sending invalid command " + command);
-	    send(Amelia.config.serverHost, "421 " + getParent().getID() + " " + command.split(" ")[0].toUpperCase() + " :Unknown command");
-	} else {
-	    ICommand cmd = CommandRegistry.getCommand(command.split(" ")[0].toUpperCase());
-	    String[] args = new String[command.split(" ").length - 1];
-	    for (int i = 1; i < command.split(" ").length; i++) {
-		args[i - 1] = command.split(" ")[i];
-	    }
-	    try {
-		cmd.exec(this.getParent(), args, command);
-	    } catch (Exception e) {
-		CrimsonLog.warning(e);
-	    }
-	}
+        if (command.indexOf(' ') <= 0) {
+            command += " ";
+        }
+        if (this.fails > 0) {
+            this.fails--; //Give the user credit for actually sending a line this time :)
+        }
+        if (!CommandRegistry.hasCommand(command.split(" ")[0].toUpperCase())) {
+            CrimsonLog.warning(getParent().getID() + " is sending invalid command " + command);
+            send(Amelia.config.serverHost, "421 " + getParent().getID() + " " + command.split(" ")[0].toUpperCase() + " :Unknown command");
+        } else {
+            ICommand cmd = CommandRegistry.getCommand(command.split(" ")[0].toUpperCase());
+            String[] args = new String[command.split(" ").length - 1];
+            for (int i = 1; i < command.split(" ").length; i++) {
+                args[i - 1] = command.split(" ")[i];
+            }
+            try {
+                cmd.exec(this.getParent(), args, command);
+            } catch (Exception e) {
+                CrimsonLog.warning(e);
+            }
+        }
     }
 
     /**
@@ -157,7 +158,7 @@ public class InputThread extends AmeliaThread {
      * @param line
      */
     public void send(String origin, String line) {
-	this.getParent().sendRaw(origin, line);
+        this.getParent().sendRaw(origin, line);
     }
 
 }

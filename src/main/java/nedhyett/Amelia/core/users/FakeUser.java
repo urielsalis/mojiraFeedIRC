@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2014, Ned Hyett
  *  All rights reserved.
- * 
+ *
  *  By using this program/package/library you agree to be completely and unconditionally
  *  bound by the agreement displayed below. Any deviation from this agreement will not
  *  be tolerated.
- * 
+ *
  *  Redistribution and use in source and binary forms, with or without modification,
  *  are permitted provided that the following conditions are met:
- * 
+ *
  *  1. Redistributions of source code must retain the above copyright notice, this
  *  list of conditions and the following disclaimer.
  *  2. Redistributions in binary form must reproduce the above copyright notice, this
@@ -16,7 +16,7 @@
  *  materials provided with the distribution.
  *  3. The redistribution is not sold, unless permission is granted from the copyright holder.
  *  4. The redistribution must contain reference to the original author, and this page.
- * 
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -50,28 +50,27 @@ public abstract class FakeUser extends User {
      * @param realname The realname to give this user
      */
     public FakeUser(String nick, String username, String hostmask, String realname) {
-	super();
-	this.nick = nick;
-	this.username = username;
-	this.GECOS = realname;
-	this.hostmask = hostmask;
+        super();
+        this.nick = nick;
+        this.username = username;
+        this.GECOS = realname;
+        this.hostmask = hostmask;
     }
 
     @Override
     public String getHostAddress() {
-	return this.hostmask;
+        return this.hostmask;
     }
 
     @Override
     public void sendRaw(String origin, String str) {
-	User u = UserManager.getFromID(origin);
-	String command;
-	if (u != null) {
-	    command = str.substring(0, str.indexOf(" "));
-	    handleInput(u, command, str);
-	} else {
-	    //Do something?
-	}
+        User u = UserManager.getFromID(origin);
+        String command;
+        if (u != null) {
+            command = str.substring(0, str.indexOf(" "));
+            handleInput(u, command, str);
+        }
+
     }
 
     /**
@@ -85,7 +84,7 @@ public abstract class FakeUser extends User {
 
     @Override
     public void quit(String message) {
-	//Can't quit.
+        //Can't quit.
     }
 
 }

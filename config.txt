@@ -12,6 +12,4 @@
         description: "Dev",
         email: "mojirafeed@urielsalis.me"
     }
-
-
 }

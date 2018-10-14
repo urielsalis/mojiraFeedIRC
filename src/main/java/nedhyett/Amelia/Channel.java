@@ -32,6 +32,7 @@ package nedhyett.Amelia;
 
 import java.util.ArrayList;
 import java.util.Random;
+
 import nedhyett.Amelia.core.users.User;
 import nedhyett.Amelia.enums.EnumChannelModes;
 import nedhyett.Amelia.managers.ChannelManager;
@@ -147,7 +148,7 @@ public class Channel {
      * @param name
      */
     public Channel(String name) {
-	this.name = name;
+        this.name = name;
     }
 
     /**
@@ -155,17 +156,17 @@ public class Channel {
      *
      * @param user
      */
-    public void join(User user) {
-	this.activeUsers.add(user);
-	if (this.activeUsers.size() == 1) {
-	    this.ops.add(user.nick);
-	}
-	this.sendRaw(user.getID(), "JOIN :" + this.name);
-	if (this.canPerformOperatorFunction(user.nick)) {
-	    this.sendRaw(Amelia.config.serverHost, "MODE " + this.name + " +o " + user.nick);
-	} else if (canPerformVoiceFunction(user.nick)) {
-	    this.sendRaw(Amelia.config.serverHost, "MODE " + this.name + " +v " + user.nick);
-	}
+    public synchronized void join(User user) {
+        this.activeUsers.add(user);
+        if (this.activeUsers.size() == 1) {
+            this.ops.add(user.nick);
+        }
+        this.sendRaw(user.getID(), "JOIN :" + this.name);
+        if (this.canPerformOperatorFunction(user.nick)) {
+            this.sendRaw(Amelia.config.serverHost, "MODE " + this.name + " +o " + user.nick);
+        } else if (canPerformVoiceFunction(user.nick)) {
+            this.sendRaw(Amelia.config.serverHost, "MODE " + this.name + " +v " + user.nick);
+        }
     }
 
     /**
@@ -174,13 +175,13 @@ public class Channel {
      * @param user
      * @param reason
      */
-    public void leave(User user, String reason) {
-	this.sendRaw(user.getID(), "PART " + this.name + " :" + reason);
-	this.activeUsers.remove(user);
-	if (this.activeUsers.isEmpty()) {
-	    CrimsonLog.info("Closing channel " + this.name);
-	    ChannelManager.closeChannel(this.name);
-	}
+    public synchronized  void leave(User user, String reason) {
+        this.sendRaw(user.getID(), "PART " + this.name + " :" + reason);
+        this.activeUsers.remove(user);
+        if (this.activeUsers.isEmpty()) {
+            CrimsonLog.info("Closing channel " + this.name);
+            ChannelManager.closeChannel(this.name);
+        }
     }
 
     /**
@@ -188,12 +189,12 @@ public class Channel {
      *
      * @param user
      */
-    public void leaveNoAnnounce(User user) {
-	this.activeUsers.remove(user);
-	if (this.activeUsers.isEmpty()) {
-	    CrimsonLog.info("Closing channel " + this.name);
-	    ChannelManager.closeChannel(this.name);
-	}
+    public synchronized  void leaveNoAnnounce(User user) {
+        this.activeUsers.remove(user);
+        if (this.activeUsers.isEmpty()) {
+            CrimsonLog.info("Closing channel " + this.name);
+            ChannelManager.closeChannel(this.name);
+        }
     }
 
     /**
@@ -202,10 +203,8 @@ public class Channel {
      * @param origin
      * @param message
      */
-    public void sendRaw(String origin, String message) {
-	this.activeUsers.stream().forEach((u) -> {
-	    u.sendRaw(origin, message);
-	});
+    public synchronized  void sendRaw(String origin, String message) {
+        this.activeUsers.forEach((u) -> u.sendRaw(origin, message));
     }
 
     /**
@@ -214,7 +213,7 @@ public class Channel {
      * @param message
      */
     public void sendRawS(String message) {
-	this.sendRaw(Amelia.config.serverHost, message);
+        this.sendRaw(Amelia.config.serverHost, message);
     }
 
     /**
@@ -224,20 +223,20 @@ public class Channel {
      * @param message
      * @param except
      */
-    public void sendRawExcept(String origin, String message, User... except) {
-	for (User u : this.activeUsers) {
-	    boolean exceptu = false;
-	    for (User u1 : except) {
-		if (u.equals(u1)) {
-		    exceptu = true;
-		    break;
-		}
-	    }
-	    if (exceptu) {
-		continue;
-	    }
-	    u.sendRaw(origin, message);
-	}
+    public synchronized void sendRawExcept(String origin, String message, User... except) {
+        for (User u : this.activeUsers) {
+            boolean exceptu = false;
+            for (User u1 : except) {
+                if (u.equals(u1)) {
+                    exceptu = true;
+                    break;
+                }
+            }
+            if (exceptu) {
+                continue;
+            }
+            u.sendRaw(origin, message);
+        }
     }
 
     /**
@@ -246,8 +245,8 @@ public class Channel {
      * @param message
      * @param from
      */
-    public void sendMsg(String message, User from) {
-	this.sendRawExcept(from.getID(), "PRIVMSG " + this.name + " :" + message, from);
+    public synchronized void sendMsg(String message, User from) {
+        this.sendRawExcept(from.getID(), "PRIVMSG " + this.name + " :" + message, from);
     }
 
     /**
@@ -255,25 +254,23 @@ public class Channel {
      * Redirects to canPerformOperatorFunction(nick)
      *
      * @param u
-     *
      * @return
      */
-    public boolean canPerformOperatorFunction(User u) {
-	return canPerformOperatorFunction(u.nick);
+    public synchronized boolean canPerformOperatorFunction(User u) {
+        return canPerformOperatorFunction(u.nick);
     }
 
     /**
      * Does this nick have operator powers?
      *
      * @param nick
-     *
      * @return
      */
-    public boolean canPerformOperatorFunction(String nick) {
-	if (this.ops.isEmpty()) {
-	    return true;
-	}
-	return this.ops.contains(nick);
+    public synchronized boolean canPerformOperatorFunction(String nick) {
+        if (this.ops.isEmpty()) {
+            return true;
+        }
+        return this.ops.contains(nick);
     }
 
     /**
@@ -281,25 +278,23 @@ public class Channel {
      * Redirects to canPerformVoiceFunction(nick)
      *
      * @param u
-     *
      * @return
      */
-    public boolean canPerformVocieFunction(User u) {
-	return canPerformVoiceFunction(u.nick);
+    public synchronized boolean canPerformVocieFunction(User u) {
+        return canPerformVoiceFunction(u.nick);
     }
 
     /**
      * Does this nick have voice powers?
      *
      * @param nick
-     *
      * @return
      */
-    public boolean canPerformVoiceFunction(String nick) {
-	if (this.ops.isEmpty()) {
-	    return true;
-	}
-	return this.ops.contains(nick);
+    public synchronized boolean canPerformVoiceFunction(String nick) {
+        if (this.ops.isEmpty()) {
+            return true;
+        }
+        return this.ops.contains(nick);
     }
 
     /**
@@ -308,71 +303,67 @@ public class Channel {
      *
      * @return
      */
-    public String getFlags() {
-	String str = "";
-	if (this.inviteOnly) {
-	    str += EnumChannelModes.inviteOnly.text;
-	}
-	if (this.moderated) {
-	    str += EnumChannelModes.chanModerated.text;
-	}
-	if (this.noexternal) {
-	    str += EnumChannelModes.chanNoExternal.text;
-	}
-	if (this.topicProtection) {
-	    str += EnumChannelModes.chanTopicProtected.text;
-	}
-	return str;
+    public synchronized String getFlags() {
+        String str = "";
+        if (this.inviteOnly) {
+            str += EnumChannelModes.inviteOnly.text;
+        }
+        if (this.moderated) {
+            str += EnumChannelModes.chanModerated.text;
+        }
+        if (this.noexternal) {
+            str += EnumChannelModes.chanNoExternal.text;
+        }
+        if (this.topicProtection) {
+            str += EnumChannelModes.chanTopicProtected.text;
+        }
+        return str;
     }
 
     /**
      * Checks if this user is banned. (not implemented)
      *
      * @param u
-     *
      * @return
      */
-    public boolean isBanned(User u) {
-	return false;
+    public synchronized boolean isBanned(User u) {
+        return false;
     }
 
     /**
      * Checks if this user has been invited to the channel. (not implemented)
      *
      * @param u
-     *
      * @return
      */
-    public boolean isInvited(User u) {
-	return false;
+    public synchronized boolean isInvited(User u) {
+        return false;
     }
 
     /**
      * Checks if this user has the power to speak in the channel.
      *
      * @param u
-     *
      * @return
      */
-    public boolean canSpeak(User u) {
-	if (isBanned(u)) {
-	    return false;
-	}
-	if (!moderated) {
-	    return true;
-	}
-	return this.canPerformVoiceFunction(u.nick) || this.canPerformOperatorFunction(u.nick);
+    public synchronized boolean canSpeak(User u) {
+        if (isBanned(u)) {
+            return false;
+        }
+        if (!moderated) {
+            return true;
+        }
+        return this.canPerformVoiceFunction(u.nick) || this.canPerformOperatorFunction(u.nick);
     }
 
     /**
      * Is this user an operator? (doesn't check if channel is empty)
      *
      * @param u
-     *
      * @return
      */
-    public boolean isOp(User u) {
-	return this.ops.contains(u.nick);
+    public synchronized boolean isOp(User u) {
+        return this.ops.contains(u.nick);
     }
 
     /**
@@ -380,11 +371,10 @@ public class Channel {
      * (could be duplicate of canPerformVoiceFunction?)
      *
      * @param u
-     *
      * @return
      */
-    public boolean isVoice(User u) {
-	return this.voices.contains(u.nick);
+    public synchronized boolean isVoice(User u) {
+        return this.voices.contains(u.nick);
     }
 
     /**
@@ -392,8 +382,8 @@ public class Channel {
      *
      * @param u
      */
-    public void op(User u) {
-	op(u.nick);
+    public synchronized void op(User u) {
+        op(u.nick);
     }
 
     /**
@@ -401,8 +391,8 @@ public class Channel {
      *
      * @param nick
      */
-    public void op(String nick) {
-	this.ops.add(nick);
+    public synchronized void op(String nick) {
+        this.ops.add(nick);
     }
 
     /**
@@ -410,8 +400,8 @@ public class Channel {
      *
      * @param u
      */
-    public void deop(User u) {
-	deop(u.nick);
+    public synchronized void deop(User u) {
+        deop(u.nick);
     }
 
     /**
@@ -419,8 +409,8 @@ public class Channel {
      *
      * @param nick
      */
-    public void deop(String nick) {
-	this.ops.remove(nick);
+    public synchronized void deop(String nick) {
+        this.ops.remove(nick);
     }
 
     /**
@@ -428,8 +418,8 @@ public class Channel {
      *
      * @param u
      */
-    public void voice(User u) {
-	voice(u.nick);
+    public synchronized void voice(User u) {
+        voice(u.nick);
     }
 
     /**
@@ -437,8 +427,8 @@ public class Channel {
      *
      * @param nick
      */
-    public void voice(String nick) {
-	this.voices.add(nick);
+    public synchronized void voice(String nick) {
+        this.voices.add(nick);
     }
 
     /**
@@ -446,8 +436,8 @@ public class Channel {
      *
      * @param u
      */
-    public void devoice(User u) {
-	devoice(u.nick);
+    public synchronized void devoice(User u) {
+        devoice(u.nick);
     }
 
     /**
@@ -455,33 +445,31 @@ public class Channel {
      *
      * @param nick
      */
-    public void devoice(String nick) {
-	this.voices.remove(nick);
+    public synchronized void devoice(String nick) {
+        this.voices.remove(nick);
     }
 
     /**
      * Is the provided user in this channel?
      *
      * @param u
-     *
      * @return
      */
-    public boolean isInChannel(User u) {
-	return this.activeUsers.contains(u);
+    public synchronized boolean isInChannel(User u) {
+        return this.activeUsers.contains(u);
     }
 
     /**
      * Is the provided nick in this channel?
      *
      * @param nick
-     *
      * @return
      */
-    public boolean isInChannel(String nick) {
-	if (this.activeUsers.stream().anyMatch((u) -> (u.nick.equals(nick)))) {
-	    return true;
-	}
-	return false;
+    public synchronized boolean isInChannel(String nick) {
+        if (this.activeUsers.stream().anyMatch((u) -> (u.nick.equals(nick)))) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -489,8 +477,8 @@ public class Channel {
      *
      * @param u
      */
-    public void invite(User u) {
-	invite(u.nick);
+    public synchronized void invite(User u) {
+        invite(u.nick);
     }
 
     /**
@@ -498,8 +486,8 @@ public class Channel {
      *
      * @param nick
      */
-    public void invite(String nick) {
-	this.invitedUsers.add(nick);
+    public synchronized void invite(String nick) {
+        this.invitedUsers.add(nick);
     }
 
     /**
@@ -507,8 +495,8 @@ public class Channel {
      *
      * @param u
      */
-    public void uninvite(User u) {
-	uninvite(u.nick);
+    public synchronized void uninvite(User u) {
+        uninvite(u.nick);
     }
 
     /**
@@ -516,19 +504,19 @@ public class Channel {
      *
      * @param nick
      */
-    public void uninvite(String nick) {
-	this.invitedUsers.remove(nick);
+    public synchronized void uninvite(String nick) {
+        this.invitedUsers.remove(nick);
     }
 
     /**
      * Get the active users list.
-     *
+     * <p>
      * WARNING: DO NOT CHANGE THIS LIST DIRECTLY!
      *
      * @return
      */
-    public ArrayList<User> getActiveUsers() {
-	return this.activeUsers;
+    public synchronized ArrayList<User> getActiveUsers() {
+        return this.activeUsers;
     }
 
     /**
@@ -536,8 +524,8 @@ public class Channel {
      *
      * @return
      */
-    public int countActiveUsers() {
-	return this.activeUsers.size();
+    public synchronized int countActiveUsers() {
+        return this.activeUsers.size();
     }
 
     /**
@@ -545,16 +533,16 @@ public class Channel {
      *
      * @return
      */
-    public boolean isAtUserLimit() {
-	if (this.userLimit <= 0) {
-	    return false;
-	}
-	return this.userLimit <= this.countActiveUsers();
+    public synchronized boolean isAtUserLimit() {
+        if (this.userLimit <= 0) {
+            return false;
+        }
+        return this.userLimit <= this.countActiveUsers();
     }
 
     /**
      * Pick a list of random users from this channel.<br><br>
-     *
+     * <p>
      * Notice: do not expect num amount of users back from this function. If
      * there are not enough users in this channel to meet this number, it will
      * return every user in the channel. If your query is too small (i.e. there
@@ -565,44 +553,43 @@ public class Channel {
      * @param canBeVoice If this list can contain voices
      * @param canBeOp    If this list can contain operators.
      * @param seed       The seed for the RNG.
-     *
      * @return The results of your query.
      */
-    public ArrayList<User> pickRandomUsers(int num, boolean canBeVoice, boolean canBeOp, long seed) {
-	if (num >= this.countActiveUsers()) {
-	    return getActiveUsers();
-	}
-	int possibleChoices = 0;
-	possibleChoices = getActiveUsers().stream().filter((u) -> !(!canBeVoice && this.isVoice(u))).filter((u) -> !(!canBeOp && this.isOp(u))).map((_item) -> 1).reduce(possibleChoices, (a, b) -> Integer.sum(a, b));
-	ArrayList<User> picks = new ArrayList<>(this.getActiveUsers());
-	ArrayList<User> returnedUsers = new ArrayList<>();
-	Random r = new Random();
-	if (seed != 0) {
-	    r.setSeed(seed);
-	} else {
-	    r.setSeed(r.nextLong()); //I'm feeling random right now, so why not?
-	}
-	if (possibleChoices < num) {
-	    int numGot = 0;
-	    while (numGot < num) {
-		returnedUsers.add(picks.remove(r.nextInt(picks.size() - 1)));
-		numGot++;
-	    }
-	} else {
-	    int numGot = 0;
-	    while (numGot < num) {
-		User u = picks.remove(r.nextInt(picks.size() - 1));
-		if (!canBeVoice && this.isVoice(u)) {
-		    continue;
-		}
-		if (!canBeOp && this.isOp(u)) {
-		    continue;
-		}
-		returnedUsers.add(u);
-		numGot++;
-	    }
-	}
-	return returnedUsers;
+    public synchronized ArrayList<User> pickRandomUsers(int num, boolean canBeVoice, boolean canBeOp, long seed) {
+        if (num >= this.countActiveUsers()) {
+            return getActiveUsers();
+        }
+        int possibleChoices = 0;
+        possibleChoices = getActiveUsers().stream().filter((u) -> !(!canBeVoice && this.isVoice(u))).filter((u) -> !(!canBeOp && this.isOp(u))).map((_item) -> 1).reduce(possibleChoices, (a, b) -> Integer.sum(a, b));
+        ArrayList<User> picks = new ArrayList<>(this.getActiveUsers());
+        ArrayList<User> returnedUsers = new ArrayList<>();
+        Random r = new Random();
+        if (seed != 0) {
+            r.setSeed(seed);
+        } else {
+            r.setSeed(r.nextLong()); //I'm feeling random right now, so why not?
+        }
+        if (possibleChoices < num) {
+            int numGot = 0;
+            while (numGot < num) {
+                returnedUsers.add(picks.remove(r.nextInt(picks.size() - 1)));
+                numGot++;
+            }
+        } else {
+            int numGot = 0;
+            while (numGot < num) {
+                User u = picks.remove(r.nextInt(picks.size() - 1));
+                if (!canBeVoice && this.isVoice(u)) {
+                    continue;
+                }
+                if (!canBeOp && this.isOp(u)) {
+                    continue;
+                }
+                returnedUsers.add(u);
+                numGot++;
+            }
+        }
+        return returnedUsers;
     }
 
 }

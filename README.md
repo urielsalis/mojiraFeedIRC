@@ -10,10 +10,10 @@
 
 #How to use:
 -
-- Connect using a IRC client to localhost:6667 using the same username as in MOJIRA
+- Connect using a IRC client to localhost:6667 using the same username as in MOJIRA to prevent getting updates from your username
 - Register with /msg FeedServer REGISTER password
 - Login with /msg FeedServer LOGIN password
-- Join the #feed channel 
+- Join the #feed channel if your client didnt join automatically!
 
 
 #Commands:
