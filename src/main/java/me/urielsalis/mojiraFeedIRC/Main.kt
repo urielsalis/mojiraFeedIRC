@@ -25,8 +25,12 @@ object Main {
         load()
         IRCServer.start()
         while (running) {
-            readFeed(url)
-            TimeUnit.SECONDS.sleep(secondsToSleep)
+	    try {
+                readFeed(url)
+                TimeUnit.SECONDS.sleep(secondsToSleep)
+            } catch (e: Exception) {
+                e.printStackTrace();
+            }
         }
     }
 
