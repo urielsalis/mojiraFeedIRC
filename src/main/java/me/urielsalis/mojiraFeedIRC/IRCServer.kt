@@ -71,14 +71,6 @@ object IRCServer : Amelia() {
     }
 
     fun newFeed(feedObj: Feed) {
-        val nulls = userList
-                .mapValues {  UserManager.getUser(it.key) }
-                .filterValues { it == null }
-        nulls.forEach { userList.remove(it.key) }
-        val inactive = userList
-                .mapValues {  UserManager.getUser(it.key) }
-                .filterValues { !it.respondedToLastPing }
-        inactive.forEach { userList.remove(it.key)}
         userList
                 .mapKeys {  UserManager.getUser(it.key) }
                 .filterKeys { it != null }
