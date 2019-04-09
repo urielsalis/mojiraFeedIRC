@@ -3,6 +3,7 @@ package me.urielsalis.mojiraFeedIRC
 import nedhyett.Amelia.core.users.FakeUser
 import nedhyett.Amelia.core.users.User
 import nedhyett.Amelia.managers.ChannelManager
+import nedhyett.Amelia.managers.UserManager
 import org.mindrot.jbcrypt.BCrypt
 
 /**
@@ -19,7 +20,7 @@ class FeedServer(nick: String, username: String, hostmask: String, realname: Str
         when (command) {
             "JOIN" -> {
                 if (from != this) {
-                    if (IRCServer.userList[from.nick]?.user != from) {
+                    if (!IRCServer.userList.containsKey(from.nick)) {
                         val feedChannel = ChannelManager.getChannel("#feed")
                         feedChannel.leave(from, "Need to login to join #feed")
                         from.sendNotice(this.id, "Need to login to join #feed")
@@ -55,13 +56,9 @@ class FeedServer(nick: String, username: String, hostmask: String, realname: Str
                             }
 
                             val feed = IRCServer.userList[from.nick]
-                            if (feed?.user == from) {
-                                feed.addToIgnore(string)
-                                Main.save()
-                                from.sendNotice(this.id, "Ignored!")
-                            } else {
-                                from.sendNotice(this.id, "Not logged in.")
-                            }
+                            feed?.addToIgnore(string)
+                            Main.save()
+                            from.sendNotice(this.id, "Ignored!")
                         } else {
                             from.sendNotice(this.id, "Not logged in.")
                         }
@@ -77,7 +74,6 @@ class FeedServer(nick: String, username: String, hostmask: String, realname: Str
                         if (IRCServer.userList.containsKey(from.nick)) {
                             val feed = IRCServer.userList[from.nick]
                             if (BCrypt.checkpw(password, feed?.password)) {
-                                feed?.user = from
                                 from.sendNotice(this.id, "Logged in!")
                                 feedChannel.join(from)
                                 feedChannel.voice(from)
@@ -98,7 +94,7 @@ class FeedServer(nick: String, username: String, hostmask: String, realname: Str
                         }
                         val password = pars[1]
                         if (!IRCServer.userList.containsKey(from.nick)) {
-                            val userFeed = UserFeed(from.nick, BCrypt.hashpw(password, BCrypt.gensalt()), from)
+                            val userFeed = UserFeed(from.nick, BCrypt.hashpw(password, BCrypt.gensalt()))
                             IRCServer.userList[from.nick] = userFeed
                             Main.save()
                             from.sendNotice(this.id, "Registered! Please login")
