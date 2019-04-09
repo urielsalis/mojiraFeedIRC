@@ -5,7 +5,7 @@ import java.io.Serializable
 import java.util.*
 
 
-data class UserFeed(var username: String, var password: String, @field:Transient var user: User?) : Serializable {
+data class UserFeed(var username: String, var password: String) : Serializable {
     var ignoreList = mutableListOf<String>()
 
     fun addToIgnore(str: String) {

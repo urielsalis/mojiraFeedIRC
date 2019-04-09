@@ -9,6 +9,7 @@ import nedhyett.Amelia.ping.PingPongThread
 import nedhyett.crimson.logging.CrimsonLog
 import nedhyett.crimson.logging.CrimsonLog.info
 import nedhyett.crimson.logging.CrimsonLog.warning
+import org.apache.commons.collections4.CollectionUtils
 import java.io.*
 import java.util.*
 
@@ -70,18 +71,29 @@ object IRCServer : Amelia() {
     }
 
     fun newFeed(feedObj: Feed) {
+        val nulls = userList
+                .mapValues {  UserManager.getUser(it.key) }
+                .filterValues { it == null }
+        nulls.forEach { userList.remove(it.key) }
+        val inactive = userList
+                .mapValues {  UserManager.getUser(it.key) }
+                .filterValues { !it.respondedToLastPing }
+        inactive.forEach { userList.remove(it.key)}
         userList
-                .filterValues { it.user != null }
-                .filterValues { it.user!!.respondedToLastPing }
-                .filterValues { !feedObj.author.contains(it.username, true) }
+                .mapKeys {  UserManager.getUser(it.key) }
+                .filterKeys { it != null }
+                .filterKeys { it.respondedToLastPing }
+                .filterKeys { !feedObj.author.contains(it.username, true) }
                 .filterValues { feed -> !feed.ignoreList.any { feedObj.title.matches(it.toRegex()) } }
-                .forEach { _, feed -> feed.user!!.sendRaw(feedObj.author, "PRIVMSG #feed :\u000307${feedObj.link} - ${feedObj.title}") }
+                .forEach { user, _ -> user.sendRaw(feedObj.author, "PRIVMSG #feed :\u000307${feedObj.link} \u000f- ${feedObj.title}") }
 
         refreshPerms()
     }
 
     private fun refreshPerms() {
         val feedChannel = ChannelManager.getChannel("#feed")
-        userList.filterValues { it.user == null || !it.user!!.respondedToLastPing }.forEach { username, _ -> feedChannel.devoice(username) }
+        userList
+                .mapKeys {  UserManager.getUser(it.key) }
+                .filterKeys { it == null || !it.respondedToLastPing }.forEach { username, _ -> feedChannel.devoice(username) }
     }
 }
